@@ -66,7 +66,7 @@ class TicTacToeBoard:
         return hash(str(self))
 
 
-boards = []
+boards: List[TicTacToeBoard] = []
 with open("dataset.txt", "r") as dataset:
     for line in dataset.readlines():
         board = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
@@ -100,5 +100,5 @@ def minimax(board: TicTacToeBoard, playerCurrent: int, turn: int) -> Tuple[int, 
         return m
 
 
-print(boards[0])
-print(minimax(boards[0], 1, 1)[1])
+print(boards[0], "\n")
+print(minimax(boards[0], boards[0].turn, 1)[1])
