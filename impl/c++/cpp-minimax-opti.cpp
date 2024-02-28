@@ -176,6 +176,9 @@ minimaxret minimax(GameState &state, const playerID &playerToWIn, int depth = 0)
 }
 
 
+#include <chrono>
+typedef std::chrono::high_resolution_clock clockmicro;
+typedef std::chrono::duration<float, std::milli> duration;
 
 int main()
 {
@@ -186,6 +189,8 @@ int main()
     states.resize(size);
     file.read((char *)states.data(), sizeof(GameState)*size);
 
+    clockmicro::time_point start = clockmicro::now();
+
     int dummy = 0;
 
     for(int i = 0; i < size; i++)
@@ -194,7 +199,9 @@ int main()
         dummy += r.val;
     }
 
-    std::cout << dummy << "\n";
+    clockmicro::time_point end = clockmicro::now();
+
+    std::cout << (end - start).count()*0.001*0.001 << "\n";
 
     file.close();
 
