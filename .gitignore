@@ -1,5 +1,6 @@
 # C++ thingies
 *.o
+*.out
 
 # vscode stuff
 .vscode/*

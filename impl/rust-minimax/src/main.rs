@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
+use std::time::Instant;
 
 const EMPTY: char = ' ';
 const PLUS_INF: f64 = 9999.0;
@@ -14,20 +15,22 @@ fn main() {
     if let Ok(lines) = read_lines("../../dataset.txt") {
 
         let mut sum = 0.0;
-        let mut iteration = 0;
+        let mut time_sum = 0;
+        // let mut iteration = 0;
 
         // Consumes the iterator, returns an (Optional) String
         for mut line in lines.flatten() {
 
-            println!("======= ITERATION {} ========", iteration);
+            // println!("======= ITERATION {} ========", iteration);
             
+            // Get board from file (kinda obscure tbh)
             line.truncate(10);
             let mut chars = line.chars();
             let curr_player: char = chars.next().unwrap();
             let board: [char; 9];
-            
             board = to_array::<9>(line.get(1..).unwrap());
 
+            // Getting the token form who needs to win
             let winner = curr_player;
             let loser;
             if curr_player == 'X' {
@@ -36,40 +39,51 @@ fn main() {
                 loser = 'X';
             }
 
+            // Time measurement
+            let now = Instant::now();
             sum += minimax(&board, curr_player, 0, &winner, &loser);
+            let elapsed = now.elapsed();
+            time_sum += elapsed.as_millis();
 
-            retrace_path(&board, curr_player);
+            // retrace_path(&board, curr_player);
 
-            iteration = iteration + 1;
+            // iteration = iteration + 1;
 
         }
 
-        println!("{}", sum);
+        println!("Number check: {}", sum);
+        println!("Time elapsed: {} ms", time_sum)
 
     }
 
 }
 
+// MiniMax
 fn minimax(board: &[char; 9], curr_player: char, depth: i32, winner: &char, loser: &char) -> f64 {
 
-    let state = check_state(board, winner, loser);
+    let state = check_state(board, winner, loser);// 0 is TIE, 10 is WINNER, -1 is LOSER
     let childs = get_childs(board, curr_player);
     // Board is in final state
-    // 0 is TIE, 10 is WINNER, -1 is LOSER
     if state > MINUS_INF {
+        // Weighting the value of a leaf with the depth of research, to get faster wins
         state - if state == WIN {f64::from(depth)} else {0.0}
+
     } else if curr_player == *winner {
+
         let mut m = MINUS_INF;
         for c in childs {
             m = f64::max(m, minimax(&c, *loser, depth + 1, winner, loser));
         }
         m
+
     } else {
+
         let mut m = PLUS_INF;
         for c in childs {
             m = f64::min(m, minimax(&c, *winner, depth + 1, winner, loser));
         }
         m
+
     }
 
 }
@@ -85,14 +99,15 @@ fn retrace_path(board: &[char; 9], curr_player: char) {
         loser = 'X';
     }
 
+    // A finished board shouldn't have childs
     if check_state(&board, &winner, &loser) > MINUS_INF {
         return
     }
 
     let childs = get_childs(&board, curr_player);
 
+    // Gathering scores
     let mut score: Vec<f64> = Vec::new();
-
     for i in 0..childs.len() {
         score.push(minimax(&childs[i], loser, 1, &winner, &loser));
     }
@@ -101,7 +116,7 @@ fn retrace_path(board: &[char; 9], curr_player: char) {
     let mut max = MINUS_INF;
 
     println!("{:?}", score);
-
+    // Getting best child index
     for i in 0..score.len() {
         if score[i] > max {
             max = score[i];
@@ -116,6 +131,7 @@ fn retrace_path(board: &[char; 9], curr_player: char) {
 
     println!("");
 
+    // We go again
     retrace_path(&new_board, loser);
 
 }
@@ -130,6 +146,7 @@ fn print_board(board: &[char; 9], curr_player: char) {
 
 }
 
+// Return all possible child
 fn get_childs(board: &[char; 9], curr_player: char) -> Vec<[char; 9]> {
 
     let mut v: Vec<[char; 9]> = Vec::new();
@@ -145,6 +162,7 @@ fn get_childs(board: &[char; 9], curr_player: char) -> Vec<[char; 9]> {
 }
 
 // Eldritch horror
+// I am so sorry
 fn check_state(board: &[char; 9], winner: &char, loser: &char) -> f64 {
 
     // FIRST PLAYER
