@@ -3,3 +3,6 @@
 
 # vscode stuff
 .vscode/*
+
+# Cargo thingamabobs
+target/*
