@@ -42,22 +42,27 @@ class TicTacToeBoard:
 
     def isFinal(self) -> int:
         # test if board is full
-        if not 0 in self.board:
+        found_zero = False
+        for row in self.board:
+            for cell in row:
+                if cell == 0:
+                    found_zero = True
+                    break
+            if found_zero:
+                break
+        if not found_zero:
             return 0
 
         # test if there is a winner
-        g1 = np.array([1, 1, 1])
-        g2 = np.array([2, 2, 2])
         for i in range(3):
-            if np.any(self.board[i] == g1) or np.any(self.board[:, i] == g1):
-                return 1
-            if np.any(self.board[i] == g2) or np.any(self.board[:, i] == g2):
-                return 2
-
-        if np.any(self.board.diagonal() == g1) or np.any(np.fliplr(self.board).diagonal() == g1):
-            return 1
-        if np.any(self.board.diagonal() == g2) or np.any(np.fliplr(self.board).diagonal() == g2):
-            return 2
+            if self.board[i][0] == self.board[i][1] == self.board[i][2] != 0:
+                return self.board[i][0]
+            if self.board[0][i] == self.board[1][i] == self.board[2][i] != 0:
+                return self.board[0][i]
+        if self.board[0][0] == self.board[1][1] == self.board[2][2] != 0:
+            return self.board[0][0]
+        if self.board[0][2] == self.board[1][1] == self.board[2][0] != 0:
+            return self.board[0][2]
 
         return -1
 
@@ -79,34 +84,35 @@ with open("dataset.txt", "r") as dataset:
                     board[i][j] = 1
                 elif line[1 + 3 * i + j] == 'O':
                     board[i][j] = 2
-        boards.append(TicTacToeBoard(board, turn))
+        boards.append(TicTacToeBoard(np.array(board), turn))
 
 
-def minimax(board: TicTacToeBoard, playerCurrent: int, turn: int) -> Tuple[int, TicTacToeBoard]:
+def minimax(board: TicTacToeBoard, playerCurrent: int, turn: int) -> Tuple[int, int]:
     if v := board.isFinal() != -1:
-        return (1 if v == turn else -1 if v != 0 else 0, board)
+        return (1 if v == turn else -1 if v != 0 else 0, 0)
 
     if playerCurrent == turn:
-        m = (-inf, None)
-        for children in board.getChildren():
-            rslt = minimax(children, playerCurrent, turn)
+        m = (-99999, None)
+        for i, child in enumerate(board.getChildren()):
+            rslt = minimax(child, playerCurrent, turn)
             if rslt[0] > m[0]:
-                m = (rslt[0], children)
+                m = (rslt[0], i)
         return m
     else:
-        m = (inf, None)
-        for children in board.getChildren():
-            rslt = minimax(children, playerCurrent, turn)
+        m = (99999, None)
+        for i, child in enumerate(board.getChildren()):
+            rslt = minimax(child, playerCurrent, turn)
             if rslt[0] < m[0]:
-                m = (rslt[0], children)
+                m = (rslt[0], i)
         return m
 
 
 print(boards[0], "\n")
-print(minimax(boards[0], boards[0].turn, 1)[1])
+print(minimax(boards[0], boards[0].turn, boards[0].turn)[1])
 
 start = t.time()
-minimax(TicTacToeBoard(), 1, 1)
+v = minimax(TicTacToeBoard(), 1, 1)
 end = t.time()
 
 print(end - start)
+print(v[1])
