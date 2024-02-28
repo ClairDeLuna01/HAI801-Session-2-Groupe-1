@@ -8,13 +8,13 @@ import time as t
 class TicTacToeBoard:
     def __init__(self, board=None, turn=1):
         if board is None:
-            self.board = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+            self.board = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
         else:
             self.board = board
         self.turn = turn
 
     def make_move(self, x: int, y: int):
-        new_board = [row[:] for row in self.board]
+        new_board = np.array(self.board, dtype=int)
         new_board[x][y] = self.turn
         return TicTacToeBoard(new_board, 1 if self.turn == 2 else 2)
 
@@ -42,20 +42,21 @@ class TicTacToeBoard:
 
     def isFinal(self) -> int:
         # test if board is full
-        if np.array(self.board).flatten().tolist().count(0) == 0:
+        if not 0 in self.board:
             return 0
 
         # test if there is a winner
-        arr = np.array(self.board, dtype=int)
+        g1 = np.array([1, 1, 1])
+        g2 = np.array([2, 2, 2])
         for i in range(3):
-            if arr[i].tolist().count(1) == 3 or arr[:, i].tolist().count(1) == 3:
+            if np.any(self.board[i] == g1) or np.any(self.board[:, i] == g1):
                 return 1
-            if arr[i].tolist().count(2) == 3 or arr[:, i].tolist().count(2) == 3:
+            if np.any(self.board[i] == g2) or np.any(self.board[:, i] == g2):
                 return 2
 
-        if arr.diagonal().tolist().count(1) == 3 or np.fliplr(arr).diagonal().tolist().count(1) == 3:
+        if np.any(self.board.diagonal() == g1) or np.any(np.fliplr(self.board).diagonal() == g1):
             return 1
-        if arr.diagonal().tolist().count(2) == 3 or np.fliplr(arr).diagonal().tolist().count(2) == 3:
+        if np.any(self.board.diagonal() == g2) or np.any(np.fliplr(self.board).diagonal() == g2):
             return 2
 
         return -1
