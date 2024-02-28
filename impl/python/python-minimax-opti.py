@@ -116,15 +116,15 @@ def minimax(board: TicTacToeBoard, playerCurrent: int, turn: int, depth=0) -> Tu
         return m
 
 
-print(boards[4514])
-print()
-x = minimax(boards[4514], boards[4514].turn, boards[4514].turn)
-print(x[0])
-b = boards[4514]
-for i in x[1]:
-    b = b.getChildren()[i]
-    print(b)
-    print()
+# print(boards[4514])
+# print()
+# x = minimax(boards[4514], boards[4514].turn, boards[4514].turn)
+# print(x[0])
+# b = boards[4514]
+# for i in x[1]:
+#     b = b.getChildren()[i]
+#     print(b)
+#     print()
 
 
 start = t.time()
