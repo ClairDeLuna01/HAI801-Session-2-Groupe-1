@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <limits.h>
+#include <chrono>
 
 #define EMPTY ' '
 #define PLAYER_X 'X'
@@ -193,10 +194,14 @@ int main()
     fread(d, sizeof(data), 4518, fp);
 
     int v = 0;
+    auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < 4518; i++)
     {
         v += findBestMove(d[i].board, d[i].turn);
     }
+    auto end = std::chrono::high_resolution_clock::now();
+
+    std::cout << "Time taken: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
 
     std::cout << v << std::endl;
 
