@@ -5,4 +5,5 @@
 .vscode/*
 
 # Cargo thingamabobs
-target/*
+*.lock
+target/
