@@ -23,7 +23,7 @@ class TicTacToeBoard:
         file.write(str(self) + '\n')
 
     def __str__(self):
-        s = f'{"X" if self.turn == 1 else "O"}'
+        s = f'turn: {"X" if self.turn == 1 else "O"}'
         for row in self.board:
             s += '\n'
             for cell in row:
@@ -116,21 +116,25 @@ def minimax(board: TicTacToeBoard, playerCurrent: int, turn: int, depth=0) -> Tu
         return m
 
 
-# print(boards[4514])
+# N = 1
+# print(boards[N])
 # print()
-# x = minimax(boards[4514], boards[4514].turn, boards[4514].turn)
+# x = minimax(boards[N], boards[N].turn, boards[N].turn)
 # print(x[0])
-# b = boards[4514]
+# print("\n====\n")
+# b = boards[N]
 # for i in x[1]:
 #     b = b.getChildren()[i]
 #     print(b)
-#     print()
+#     print("\n====\n")
 
 
 start = t.time()
 v = 0
-for board in boards[:]:
-    v += minimax(board, board.turn, board.turn)[0]
+for i, board in enumerate(boards[:]):
+    x = minimax(board, board.turn, board.turn)[0]
+    v += x
+    # print(f"{i}:", x)
 end = t.time()
 print(end - start)
 print(v)
