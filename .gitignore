@@ -3,3 +3,7 @@
 
 # vscode stuff
 .vscode/*
+
+# Cargo thingamabobs
+*.lock
+target/
