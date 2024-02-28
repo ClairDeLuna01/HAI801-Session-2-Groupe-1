@@ -1,20 +1,21 @@
 from typing import List, Union, Tuple
 from io import TextIOWrapper
-import numpy as np
+# import numpy as np
 from math import inf
 import time as t
+from functools import cache
 
 
 class TicTacToeBoard:
-    def __init__(self, board=None, turn=1):
+    def __init__(self, board: List[List[int]] = None, turn=1):
         if board is None:
-            self.board = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
+            self.board = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         else:
             self.board = board
         self.turn = turn
 
     def make_move(self, x: int, y: int):
-        new_board = np.array(self.board, dtype=int)
+        new_board = [row.copy() for row in self.board]
         new_board[x][y] = self.turn
         return TicTacToeBoard(new_board, 1 if self.turn == 2 else 2)
 
@@ -32,6 +33,7 @@ class TicTacToeBoard:
     def __repr__(self):
         return self.__str__()
 
+    @cache
     def getChildren(self) -> List['TicTacToeBoard']:
         moves = []
         for i in range(3):
@@ -40,7 +42,19 @@ class TicTacToeBoard:
                     moves.append(self.make_move(i, j))
         return moves
 
+    @cache
     def isFinal(self) -> int:
+        # test if there is a winner
+        for i in range(3):
+            if self.board[i][0] == self.board[i][1] == self.board[i][2] != 0:
+                return self.board[i][0]
+            if self.board[0][i] == self.board[1][i] == self.board[2][i] != 0:
+                return self.board[0][i]
+        if self.board[0][0] == self.board[1][1] == self.board[2][2] != 0:
+            return self.board[0][0]
+        if self.board[0][2] == self.board[1][1] == self.board[2][0] != 0:
+            return self.board[0][2]
+
         # test if board is full
         found_zero = False
         for row in self.board:
@@ -53,29 +67,20 @@ class TicTacToeBoard:
         if not found_zero:
             return 0
 
-        # test if there is a winner
-        for i in range(3):
-            if self.board[i][0] == self.board[i][1] == self.board[i][2] != 0:
-                return self.board[i][0]
-            if self.board[0][i] == self.board[1][i] == self.board[2][i] != 0:
-                return self.board[0][i]
-        if self.board[0][0] == self.board[1][1] == self.board[2][2] != 0:
-            return self.board[0][0]
-        if self.board[0][2] == self.board[1][1] == self.board[2][0] != 0:
-            return self.board[0][2]
-
         return -1
 
     def __eq__(self, other: 'TicTacToeBoard'):
         return self.board == other.board and self.turn == other.turn
 
-    def __hash__(self):
-        return hash(str(self))
+    def __hash__(self) -> int:
+        t = tuple([tuple(row) for row in self.board])
+        return hash(t)
 
 
 boards: List[TicTacToeBoard] = []
 with open("dataset.txt", "r") as dataset:
-    for line in dataset.readlines():
+    lines = dataset.readlines()
+    for line in lines:
         board = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         turn = 1 if line[0] == 'X' else 2
         for i in range(3):
@@ -84,35 +89,48 @@ with open("dataset.txt", "r") as dataset:
                     board[i][j] = 1
                 elif line[1 + 3 * i + j] == 'O':
                     board[i][j] = 2
-        boards.append(TicTacToeBoard(np.array(board), turn))
+        boards.append(TicTacToeBoard(board, turn))
 
 
-def minimax(board: TicTacToeBoard, playerCurrent: int, turn: int) -> Tuple[int, int]:
-    if v := board.isFinal() != -1:
-        return (1 if v == turn else -1 if v != 0 else 0, 0)
+@cache
+def minimax(board: TicTacToeBoard, playerCurrent: int, turn: int, depth=0) -> Tuple[int, List[int]]:
+    if (v := board.isFinal()) != -1:
+        board.isFinal()
+        return (10 - depth if v == turn else (-1 if v != 0 else 0), [])
 
     if playerCurrent == turn:
         m = (-99999, None)
         for i, child in enumerate(board.getChildren()):
-            rslt = minimax(child, playerCurrent, turn)
+            rslt = minimax(child, 1 if playerCurrent ==
+                           2 else 2, turn, depth + 1)
             if rslt[0] > m[0]:
-                m = (rslt[0], i)
+                m = (rslt[0], [i] + rslt[1])
         return m
     else:
         m = (99999, None)
         for i, child in enumerate(board.getChildren()):
-            rslt = minimax(child, playerCurrent, turn)
+            rslt = minimax(child, 1 if playerCurrent ==
+                           2 else 2, turn, depth + 1)
             if rslt[0] < m[0]:
-                m = (rslt[0], i)
+                m = (rslt[0], [i] + rslt[1])
         return m
 
 
-print(boards[0], "\n")
-print(minimax(boards[0], boards[0].turn, boards[0].turn)[1])
+print(boards[4514])
+print()
+x = minimax(boards[4514], boards[4514].turn, boards[4514].turn)
+print(x[0])
+b = boards[4514]
+for i in x[1]:
+    b = b.getChildren()[i]
+    print(b)
+    print()
+
 
 start = t.time()
-v = minimax(TicTacToeBoard(), 1, 1)
+v = 0
+for board in boards[:]:
+    v += minimax(board, board.turn, board.turn)[0]
 end = t.time()
-
 print(end - start)
-print(v[1])
+print(v)
